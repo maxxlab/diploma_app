@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "428544083130",
+    "project_id": "diploma-751a3",
+    "storage_bucket": "diploma-751a3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:428544083130:android:b1b168b22c6e27afb26e83",
+        "android_client_info": {
+          "package_name": "com.example.tourist_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAizvCKah5XE_GP0stGYFQPd1psGSsMUuI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
