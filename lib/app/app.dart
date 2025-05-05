@@ -1,3 +1,5 @@
+// lib/app/app.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -23,7 +25,7 @@ class App extends StatelessWidget {
         themeMode: ThemeMode.system,
         routerConfig: appRouter,
         localizationsDelegates: const [
-          S.delegate,  // Use the generated delegate
+          S.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,

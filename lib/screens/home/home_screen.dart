@@ -1,7 +1,11 @@
+// lib/screens/home/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../bloc/auth/auth_bloc.dart';
+import '../../bloc/auth/auth_event.dart';
+import '../../bloc/auth/auth_state.dart';
 import '../../widgets/app_button.dart';
 import '../../generated/l10n.dart';
 import 'widgets/user_profile_card.dart';
@@ -18,45 +22,44 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              context.read<AuthBloc>().add(const AuthEvent.logoutRequested());
+              context.read<AuthBloc>().add(LogoutRequested());
             },
           ),
         ],
       ),
-      body: BlocListener<AuthBloc, AuthState>(
+      body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          state.whenOrNull(
-            unauthenticated: () => context.go('/login'),
-          );
+          if (state is Unauthenticated) {
+            context.go('/login');
+          }
         },
-        child: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            return state.maybeWhen(
-              authenticated: (user) => Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    UserProfileCard(user: user),
-                    const SizedBox(height: 24),
-                    AppButton(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(
-                          const AuthEvent.logoutRequested(),
-                        );
-                      },
-                      label: S.of(context).logout,
-                    ),
-                  ],
-                ),
+        builder: (context, state) {
+          if (state is AuthLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is Authenticated) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  UserProfileCard(user: state.user),
+                  const SizedBox(height: 24),
+                  AppButton(
+                    onPressed: () {
+                      context.read<AuthBloc>().add(LogoutRequested());
+                    },
+                    label: S.of(context).logout,
+                  ),
+                ],
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (message) => Center(
-                child: Text('Error: $message'),
-              ),
-              orElse: () => const SizedBox(),
             );
-          },
-        ),
+          } else if (state is AuthError) {
+            return Center(
+              child: Text('Error: ${state.message}'),
+            );
+          } else {
+            return const SizedBox(); // Default empty state
+          }
+        },
       ),
     );
   }

@@ -1,46 +1,44 @@
+// lib/bloc/auth/auth_bloc.dart
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import '../../repositories/auth_repository.dart';
-import '../../models/user.dart';
-
-part 'auth_event.dart';
-part 'auth_state.dart';
-part 'auth_bloc.freezed.dart';
+import 'auth_event.dart';
+import 'auth_state.dart';
 
 @injectable
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
 
-  AuthBloc(this._authRepository) : super(const AuthState.initial()) {
-    on<AuthLoginRequested>(_onLoginRequested);
-    on<AuthLogoutRequested>(_onLogoutRequested);
-    on<AuthCheckStatus>(_onCheckStatus);
-    on<AuthSignUpRequested>(_onSignUpRequested);
+  AuthBloc(this._authRepository) : super(AuthInitial()) {
+    on<LoginRequested>(_onLoginRequested);
+    on<SignUpRequested>(_onSignUpRequested);
+    on<LogoutRequested>(_onLogoutRequested);
+    on<CheckAuthStatus>(_onCheckStatus);
   }
 
   Future<void> _onLoginRequested(
-      AuthLoginRequested event,
+      LoginRequested event,
       Emitter<AuthState> emit,
       ) async {
-    emit(const AuthState.loading());
+    emit(AuthLoading());
 
     try {
       final user = await _authRepository.login(
         email: event.email,
         password: event.password,
       );
-      emit(AuthState.authenticated(user));
+      emit(Authenticated(user));
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthError(e.toString()));
     }
   }
 
   Future<void> _onSignUpRequested(
-      AuthSignUpRequested event,
+      SignUpRequested event,
       Emitter<AuthState> emit,
       ) async {
-    emit(const AuthState.loading());
+    emit(AuthLoading());
 
     try {
       final user = await _authRepository.signUp(
@@ -48,41 +46,47 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         name: event.name,
       );
-      emit(AuthState.authenticated(user));
+      emit(Authenticated(user));
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthError(e.toString()));
     }
   }
 
   Future<void> _onLogoutRequested(
-      AuthLogoutRequested event,
+      LogoutRequested event,
       Emitter<AuthState> emit,
       ) async {
-    emit(const AuthState.loading());
+    emit(AuthLoading());
 
     try {
       await _authRepository.logout();
-      emit(const AuthState.unauthenticated());
+      emit(Unauthenticated());
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthError(e.toString()));
     }
   }
 
   Future<void> _onCheckStatus(
-      AuthCheckStatus event,
+      CheckAuthStatus event,
       Emitter<AuthState> emit,
       ) async {
-    emit(const AuthState.loading());
+    emit(AuthLoading());
 
     try {
       final user = await _authRepository.getCurrentUser();
       if (user != null) {
-        emit(AuthState.authenticated(user));
+        emit(Authenticated(user));
       } else {
-        emit(const AuthState.unauthenticated());
+        emit(Unauthenticated());
       }
     } catch (e) {
-      emit(AuthState.error(e.toString()));
+      emit(AuthError(e.toString()));
     }
+  }
+
+  @override
+  void onChange(Change<AuthState> change) {
+    super.onChange(change);
+    print('AuthBloc: ${change.currentState} -> ${change.nextState}');
   }
 }
