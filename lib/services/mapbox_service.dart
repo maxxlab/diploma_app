@@ -6,23 +6,22 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../models/poi.dart';
 
 class MapboxService {
-  // Convert POIs to GeoJSON
   static String poisToGeoJson(List<POI> pois) {
     final features = pois
         .map((poi) => {
-              'type': 'Feature',
-              'geometry': {
-                'type': 'Point',
-                'coordinates': [poi.location.longitude, poi.location.latitude]
-              },
-              'properties': {
-                'id': poi.id,
-                'name': poi.name,
-                'description': poi.description,
-                'category': poi.category,
-                'rating': poi.averageRating,
-              }
-            })
+      'type': 'Feature',
+      'geometry': {
+        'type': 'Point',
+        'coordinates': [poi.location.longitude, poi.location.latitude]
+      },
+      'properties': {
+        'id': poi.id,
+        'name': poi.name,
+        'description': poi.description,
+        'category': poi.category,
+        'rating': poi.averageRating,
+      }
+    })
         .toList();
 
     final featureCollection = {
@@ -33,21 +32,18 @@ class MapboxService {
     return jsonEncode(featureCollection);
   }
 
-  // Add point annotations for POIs
   static Future<PointAnnotationManager?> addPOIAnnotations(
-    MapboxMap mapboxMap,
-    List<POI> pois,
-    Function(PointAnnotation) onTap,
-  ) async {
+      MapboxMap mapboxMap,
+      List<POI> pois,
+      Function(PointAnnotation) onTap,
+      ) async {
     try {
-      // Create point annotation manager
       final pointAnnotationManager =
-          await mapboxMap.annotations.createPointAnnotationManager();
+      await mapboxMap.annotations.createPointAnnotationManager();
 
       final ByteData bytes = await rootBundle.load('assets/images/map_pin.png');
       final Uint8List imageData = bytes.buffer.asUint8List();
 
-      // Create point annotations from POIs
       for (final poi in pois) {
         final point = Point(
           coordinates: Position(
@@ -63,20 +59,18 @@ class MapboxService {
           textField: poi.name,
           textSize: 12.0,
           textOffset: [0, 1.5],
-          // textColor: "#000000",
         );
 
-        // Create the annotation
         await pointAnnotationManager.create(pointAnnotationOptions);
-
-        pointAnnotationManager.addOnPointAnnotationClickListener(
-          AnnotationClickListener(
-            pointAnnotationManager: pointAnnotationManager,
-            onAnnotationTap: onTap,
-            mapboxMap: mapboxMap,
-          ),
-        );
       }
+
+      pointAnnotationManager.addOnPointAnnotationClickListener(
+        AnnotationClickListener(
+          pointAnnotationManager: pointAnnotationManager,
+          onAnnotationTap: onTap,
+          mapboxMap: mapboxMap,
+        ),
+      );
 
       return pointAnnotationManager;
     } catch (e) {
@@ -85,21 +79,20 @@ class MapboxService {
     }
   }
 
-  // Helper to get color for POI category
   static String getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'historical':
-        return "#964B00"; // Brown
+        return "#964B00";
       case 'museum':
-        return "#9370DB"; // Purple
+        return "#9370DB";
       case 'restaurant':
-        return "#FF4500"; // Orange Red
+        return "#FF4500";
       case 'cafe':
-        return "#8B4513"; // Saddle Brown
+        return "#8B4513";
       case 'viewpoint':
-        return "#1E90FF"; // Dodger Blue
+        return "#1E90FF";
       default:
-        return "#000000"; // Black
+        return "#000000";
     }
   }
 }
@@ -117,12 +110,9 @@ class AnnotationClickListener extends OnPointAnnotationClickListener {
 
   @override
   bool onPointAnnotationClick(PointAnnotation annotation) {
-    print("Annotation clicked at: ${annotation.geometry}");
-
     if (onAnnotationTap != null) {
       onAnnotationTap!(annotation);
     }
-
     return true;
   }
 }

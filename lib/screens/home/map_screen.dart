@@ -1,4 +1,4 @@
-// lib/screens/map/map_screen.dart
+// lib/screens/home/map_screen.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,14 +32,12 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _requestLocationPermission();
-    // Load POIs when screen initializes
     context.read<POIBloc>().add(LoadPOIs());
   }
 
   Future<void> _requestLocationPermission() async {
     final status = await Permission.location.request();
     if (status.isDenied) {
-      // Show dialog explaining why location is needed
       if (mounted) {
         showDialog(
           context: context,
@@ -65,13 +63,8 @@ class _MapScreenState extends State<MapScreen> {
       _isMapInitialized = true;
     });
 
-    // Enable user location tracking
     _enableLocationComponent();
 
-    // Set up map click handler
-    // mapboxMap.onMapTapListener!(_onMapTap);
-
-    // Load POIs onto the map if they're already loaded in the bloc
     final state = context.read<POIBloc>().state;
     if (state is POIsLoaded) {
       _pois = state.pois;
@@ -79,46 +72,33 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // Handle map taps
-  void _onMapTap(ScreenCoordinate point) async {
-    if (_mapboxMap == null) return;
-
+  void _handlePointAnnotationTap(PointAnnotation annotation) {
     try {
-      // Create query options
-      final options = RenderedQueryOptions(
-        layerIds: ["pois-layer"],
-        filter: null,
+      final clickedPosition = annotation.geometry.coordinates;
+
+      // Find the POI with matching coordinates
+      final matchingPoi = _pois.firstWhere(
+              (poi) =>
+              _isCoordinateMatch(
+                  poi.location.longitude,
+                  poi.location.latitude,
+                  clickedPosition.lng.toDouble(),
+                  clickedPosition.lat.toDouble()
+              ),
+          orElse: () => throw Exception('No matching POI found')
       );
 
-      // Create query geometry
-      final geometry = RenderedQueryGeometry.fromScreenCoordinate(point);
-
-      // Query features
-      final results =
-          await _mapboxMap!.queryRenderedFeatures(geometry, options);
-
-      // Check if any features were found
-      if (results.isNotEmpty) {
-        final feature = results.first;
-        if (feature!.queriedFeature.feature != null) {
-          // Parse properties
-          final properties =
-              jsonDecode(feature.queriedFeature.feature.toString());
-
-          // Get the POI ID
-          final poiId = properties['id'] as String?;
-          if (poiId != null) {
-            // Find the POI in our list
-            final poiIndex = _pois.indexWhere((p) => p.id == poiId);
-            if (poiIndex >= 0) {
-              _showPOIDetails(context, _pois[poiIndex]);
-            }
-          }
-        }
-      }
+      _showPOIDetails(context, matchingPoi);
     } catch (e) {
-      print('Error querying features: $e');
+      print('Error handling annotation tap: $e');
     }
+  }
+
+  // Helper to check if coordinates match within a small threshold
+  bool _isCoordinateMatch(double lon1, double lat1, double lon2, double lat2) {
+    const double threshold = 0.0001; // About 11 meters at the equator
+    return (lon1 - lon2).abs() < threshold &&
+        (lat1 - lat2).abs() < threshold;
   }
 
   Future<void> _enableLocationComponent() async {
@@ -137,7 +117,6 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // Fly to Lviv, Ukraine
   Future<void> _flyToLviv() async {
     if (_mapboxMap == null) return;
 
@@ -145,9 +124,9 @@ class _MapScreenState extends State<MapScreen> {
       final cameraOptions = CameraOptions(
         center: Point(
           coordinates: Position(
-              24.031111, // Lviv longitude
-              49.842957 // Lviv latitude
-              ),
+              24.031111,
+              49.842957
+          ),
         ),
         zoom: 12.0,
       );
@@ -165,10 +144,11 @@ class _MapScreenState extends State<MapScreen> {
     _pois = pois;
 
     try {
-      await MapboxService.addPOIAnnotations(_mapboxMap!, pois,
-          (annotation) async {
-        // await _handlePinTap(annotation, emit);
-      });
+      _pointAnnotationManager = await MapboxService.addPOIAnnotations(
+          _mapboxMap!,
+          pois,
+          _handlePointAnnotationTap
+      );
 
       _flyToLviv();
     } catch (e) {
@@ -204,7 +184,7 @@ class _MapScreenState extends State<MapScreen> {
                   const Text('Rating: '),
                   ...List.generate(
                     poi.averageRating.round(),
-                    (index) => const Icon(
+                        (index) => const Icon(
                       Icons.star,
                       size: 16,
                       color: Colors.amber,
@@ -221,10 +201,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
-    // Clean up resources
-    if (_mapboxMap != null) {
-      // _mapboxMap!.cancelMapClick();
-    }
+    // _pointAnnotationManager?.dispose();
     super.dispose();
   }
 
@@ -258,25 +235,21 @@ class _MapScreenState extends State<MapScreen> {
         builder: (context, state) {
           return Stack(
             children: [
-              // Mapbox Map Widget
               MapWidget(
                 key: const ValueKey('mapWidget'),
                 styleUri: MapboxConstants.styleUri,
                 cameraOptions: CameraOptions(
                   center: Point(coordinates: Position(24.031111, 49.842957)),
-                  // Lviv center
                   zoom: 12.0,
                 ),
                 onMapCreated: _onMapCreated,
               ),
 
-              // Loading indicator
               if (state is POILoading)
                 const Center(
                   child: CircularProgressIndicator(),
                 ),
 
-              // Error view
               if (state is POIError)
                 ErrorView(
                   message: state.message,
@@ -285,7 +258,6 @@ class _MapScreenState extends State<MapScreen> {
                   },
                 ),
 
-              // Bottom controls
               Positioned(
                 bottom: 16,
                 left: 16,
