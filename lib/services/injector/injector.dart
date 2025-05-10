@@ -13,5 +13,7 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => FirebaseFirestore.instance);
 
   // Initialize generated dependencies
+  // This will register all dependencies from injector.config.dart,
+  // including POIRepository and POIBloc
   getIt.init();
 }

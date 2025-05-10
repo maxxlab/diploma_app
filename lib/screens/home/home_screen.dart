@@ -1,33 +1,21 @@
 // lib/screens/home/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tourist_app/screens/home/map_screen.dart';
+import 'package:tourist_app/screens/home/poi/bloc/poi_bloc.dart';
 import '../../bloc/auth/auth_bloc.dart';
-import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
-import '../../widgets/app_button.dart';
-import '../../generated/l10n.dart';
-import 'widgets/user_profile_card.dart';
+import '../../services/injector/injector.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(S.of(context).home),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              context.read<AuthBloc>().add(LogoutRequested());
-            },
-          ),
-        ],
-      ),
-      body: BlocConsumer<AuthBloc, AuthState>(
+    return BlocProvider(
+      create: (context) => getIt<POIBloc>(),
+      child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Unauthenticated) {
             context.go('/login');
@@ -35,29 +23,19 @@ class HomeScreen extends StatelessWidget {
         },
         builder: (context, state) {
           if (state is AuthLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
           } else if (state is Authenticated) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  UserProfileCard(user: state.user),
-                  const SizedBox(height: 24),
-                  AppButton(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(LogoutRequested());
-                    },
-                    label: S.of(context).logout,
-                  ),
-                ],
+            return const MapScreen();
+          } else if (state is AuthError) {
+            return Scaffold(
+              body: Center(
+                child: Text('Error: ${state.message}'),
               ),
             );
-          } else if (state is AuthError) {
-            return Center(
-              child: Text('Error: ${state.message}'),
-            );
           } else {
-            return const SizedBox(); // Default empty state
+            return const Scaffold(body: SizedBox()); // Default empty state
           }
         },
       ),
