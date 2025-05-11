@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tourist_app/screens/home/home_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
-import '../screens/home/map_screen.dart';
+import '../screens/map/screens/map_screen.dart';
 import '../screens/splash_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');

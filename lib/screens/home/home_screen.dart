@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tourist_app/screens/home/map_screen.dart';
+import 'package:tourist_app/screens/map/screens/map_screen.dart';
 import 'package:tourist_app/screens/home/poi/bloc/poi_bloc.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_state.dart';
