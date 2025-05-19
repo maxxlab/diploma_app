@@ -1,7 +1,8 @@
-// lib/features/map/screens/map_screen.dart
+// lib/screens/map/screens/map_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tourist_app/models/poi.dart';
 import 'package:tourist_app/screens/map/bloc/map_bloc.dart';
 import 'package:tourist_app/screens/map/widgets/map_appbar.dart';
@@ -30,6 +31,7 @@ class _MapScreenContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // Make the map extend behind app bar
       appBar: const MapAppBar(),
       body: BlocConsumer<MapBloc, MapState>(
         listener: (context, state) {
@@ -53,7 +55,10 @@ class _MapScreenContent extends StatelessWidget {
               ),
 
               if (state is MapLoading || (state is MapReady && state.isLoading))
-                const LoadingView(),
+                Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: const LoadingView(),
+                ),
 
               if (state is MapError)
                 ErrorView(
@@ -72,9 +77,17 @@ class _MapScreenContent extends StatelessWidget {
   }
 
   void _showPOIDetails(BuildContext context, POI poi) {
-    showModalBottomSheet(
+    // Using modal_bottom_sheet package for better animation and customization
+    showMaterialModalBottomSheet(
       context: context,
-      builder: (context) => POIDetailsSheet(poi: poi),
+      backgroundColor: Colors.transparent,
+      bounce: true,
+      animationCurve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 300),
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: POIDetailsSheet(poi: poi),
+      ),
     );
   }
 }
