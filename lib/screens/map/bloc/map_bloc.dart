@@ -3,6 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:tourist_app/models/area.dart';
+import 'package:tourist_app/repositories/area_repository.dart';
 import 'package:tourist_app/screens/map/services/map_service.dart';
 import '../../../models/poi.dart';
 import '../../../repositories/poi_repository.dart';
@@ -10,17 +12,20 @@ import '../../../repositories/poi_repository.dart';
 @injectable
 class MapBloc extends Bloc<MapEvent, MapState> {
   final POIRepository _poiRepository;
+  final AreaRepository _areaRepository;  // Add this
   final MapService _mapService;
   PointAnnotationManager? _pointAnnotationManager;
 
-  MapBloc(this._poiRepository, this._mapService) : super(MapInitial()) {
+  MapBloc(this._poiRepository, this._areaRepository, this._mapService) : super(MapInitial()) {
     on<InitializeMap>(_onInitializeMap);
     on<LoadMapPOIs>(_onLoadMapPOIs);
+    on<LoadMapAreas>(_onLoadMapAreas);  // Add this
     on<SelectPOI>(_onSelectPOI);
     on<FlyToLocation>(_onFlyToLocation);
     on<ToggleLocationTracking>(_onToggleLocationTracking);
     on<HandlePOITap>(_onHandlePOITap);
     on<AddMockPOIsRequested>(_onAddMockPOIs);
+    on<ToggleAreaVisibility>(_onToggleAreaVisibility);  // Add this
   }
 
   Future<void> _onInitializeMap(
@@ -32,6 +37,81 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       await _mapService.enableLocationComponent(event.mapboxMap);
       emit(MapReady(mapboxMap: event.mapboxMap));
       add(LoadMapPOIs());
+      add(LoadMapAreas()); // Add this line
+    } catch (e) {
+      emit(MapError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onLoadMapAreas(
+      LoadMapAreas event,
+      Emitter<MapState> emit,
+      ) async {
+    if (state is! MapReady) {
+      emit(MapError(message: 'Map is not ready yet'));
+      return;
+    }
+
+    final currentState = state as MapReady;
+    emit(currentState.copyWith(isLoading: true));
+
+    try {
+      final areas = await _areaRepository.getAreas();
+
+      if (currentState.mapboxMap != null) {
+        // Instead of adding area layers in the bloc, we now use the service's renderAreas method
+        await _mapService.renderAreas(
+          currentState.mapboxMap!,
+          areas,
+        );
+
+        // Initially add all area types to visible set
+        final visibleAreaTypes = areas.map((area) => area.type).toSet();
+
+        emit(currentState.copyWith(
+          areas: areas,
+          visibleAreaTypes: visibleAreaTypes,
+          isLoading: false,
+        ));
+      } else {
+        emit(currentState.copyWith(
+          areas: areas,
+          isLoading: false,
+        ));
+      }
+    } catch (e) {
+      emit(MapError(message: e.toString()));
+    }
+  }
+
+// Update the _onToggleAreaVisibility method:
+  Future<void> _onToggleAreaVisibility(
+      ToggleAreaVisibility event,
+      Emitter<MapState> emit,
+      ) async {
+    if (state is! MapReady || (state as MapReady).mapboxMap == null) return;
+
+    final currentState = state as MapReady;
+    final mapboxMap = currentState.mapboxMap!;
+
+    try {
+      final newVisibleAreaTypes = Set<String>.from(currentState.visibleAreaTypes);
+
+      if (event.visible) {
+        newVisibleAreaTypes.add(event.areaType);
+      } else {
+        newVisibleAreaTypes.remove(event.areaType);
+      }
+
+      // Use the updated toggleLayersByType method
+      await _mapService.toggleLayersByType(
+        mapboxMap,
+        event.areaType,
+        event.visible,
+        event.visible ? 1.0 : 0.0, // Full opacity when visible, 0 when not
+      );
+
+      emit(currentState.copyWith(visibleAreaTypes: newVisibleAreaTypes));
     } catch (e) {
       emit(MapError(message: e.toString()));
     }
@@ -236,6 +316,21 @@ class HandlePOITap extends MapEvent {
 
 class AddMockPOIsRequested extends MapEvent {}
 
+class LoadMapAreas extends MapEvent {}
+
+class ToggleAreaVisibility extends MapEvent {
+  final String areaType;
+  final bool visible;
+
+  const ToggleAreaVisibility({
+    required this.areaType,
+    required this.visible,
+  });
+
+  @override
+  List<Object?> get props => [areaType, visible];
+}
+
 abstract class MapState extends Equatable {
   const MapState();
 
@@ -253,6 +348,8 @@ class MapReady extends MapState {
   final POI? selectedPOI;
   final bool isLocationTrackingEnabled;
   final bool isLoading;
+  final List<Area> areas;
+  final Set<String> visibleAreaTypes;
 
   const MapReady({
     this.mapboxMap,
@@ -260,6 +357,8 @@ class MapReady extends MapState {
     this.selectedPOI,
     this.isLocationTrackingEnabled = false,
     this.isLoading = false,
+    this.areas = const [],
+    this.visibleAreaTypes = const {},
   });
 
   MapReady copyWith({
@@ -268,6 +367,8 @@ class MapReady extends MapState {
     POI? selectedPOI,
     bool? isLocationTrackingEnabled,
     bool? isLoading,
+    List<Area>? areas,
+    Set<String>? visibleAreaTypes,
   }) {
     return MapReady(
       mapboxMap: mapboxMap ?? this.mapboxMap,
@@ -275,6 +376,8 @@ class MapReady extends MapState {
       selectedPOI: selectedPOI,
       isLocationTrackingEnabled: isLocationTrackingEnabled ?? this.isLocationTrackingEnabled,
       isLoading: isLoading ?? this.isLoading,
+      areas: areas ?? this.areas,
+      visibleAreaTypes: visibleAreaTypes ?? this.visibleAreaTypes,
     );
   }
 
@@ -285,6 +388,8 @@ class MapReady extends MapState {
     selectedPOI,
     isLocationTrackingEnabled,
     isLoading,
+    areas,
+    visibleAreaTypes,
   ];
 }
 

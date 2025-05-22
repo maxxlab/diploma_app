@@ -5,6 +5,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tourist_app/models/poi.dart';
 import 'package:tourist_app/screens/map/bloc/map_bloc.dart';
+import 'package:tourist_app/screens/map/widgets/layer_control_panel.dart';
 import 'package:tourist_app/screens/map/widgets/map_appbar.dart';
 import 'package:tourist_app/screens/map/widgets/map_controls.dart';
 import 'package:tourist_app/screens/map/widgets/poi_sheet.dart';
@@ -69,6 +70,8 @@ class _MapScreenContent extends StatelessWidget {
                 ),
 
               const MapControls(),
+
+              const LayerControlPanel(),
             ],
           );
         },
