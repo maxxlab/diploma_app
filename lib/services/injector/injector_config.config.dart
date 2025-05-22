@@ -16,11 +16,14 @@ import 'package:injectable/injectable.dart' as _i526;
 import 'package:tourist_app/bloc/auth/auth_bloc.dart' as _i399;
 import 'package:tourist_app/repositories/area_repository.dart' as _i234;
 import 'package:tourist_app/repositories/auth_repository.dart' as _i223;
+import 'package:tourist_app/repositories/events_repository.dart' as _i742;
 import 'package:tourist_app/repositories/poi_repository.dart' as _i481;
 import 'package:tourist_app/repositories/user_repository.dart' as _i575;
 import 'package:tourist_app/screens/home/poi/bloc/poi_bloc.dart' as _i459;
 import 'package:tourist_app/screens/map/bloc/map_bloc.dart' as _i372;
 import 'package:tourist_app/screens/map/services/map_service.dart' as _i284;
+import 'package:tourist_app/screens/map/widgets/events/bloc/events_bloc.dart'
+    as _i219;
 import 'package:tourist_app/services/logger/app_logger.dart' as _i69;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -40,6 +43,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i59.FirebaseAuth>(),
           gh<_i974.FirebaseFirestore>(),
         ));
+    gh.factory<_i742.EventsRepository>(
+        () => _i742.EventsRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i481.POIRepository>(
         () => _i481.POIRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i399.AuthBloc>(
@@ -55,6 +60,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i234.AreaRepository>(),
           gh<_i284.MapService>(),
         ));
+    gh.factory<_i219.EventsBloc>(
+        () => _i219.EventsBloc(gh<_i742.EventsRepository>()));
     gh.factory<_i459.POIBloc>(() => _i459.POIBloc(gh<_i481.POIRepository>()));
     return this;
   }
