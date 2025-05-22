@@ -7,25 +7,29 @@ import 'package:tourist_app/models/area.dart';
 import 'package:tourist_app/repositories/area_repository.dart';
 import 'package:tourist_app/screens/map/services/map_service.dart';
 import '../../../models/poi.dart';
+import '../../../models/route_info.dart';
 import '../../../repositories/poi_repository.dart';
+import '../directions/bloc/directions_bloc.dart';
 
 @injectable
 class MapBloc extends Bloc<MapEvent, MapState> {
   final POIRepository _poiRepository;
-  final AreaRepository _areaRepository;  // Add this
+  final AreaRepository _areaRepository;
   final MapService _mapService;
   PointAnnotationManager? _pointAnnotationManager;
 
   MapBloc(this._poiRepository, this._areaRepository, this._mapService) : super(MapInitial()) {
     on<InitializeMap>(_onInitializeMap);
     on<LoadMapPOIs>(_onLoadMapPOIs);
-    on<LoadMapAreas>(_onLoadMapAreas);  // Add this
+    on<LoadMapAreas>(_onLoadMapAreas);
     on<SelectPOI>(_onSelectPOI);
     on<FlyToLocation>(_onFlyToLocation);
     on<ToggleLocationTracking>(_onToggleLocationTracking);
     on<HandlePOITap>(_onHandlePOITap);
     on<AddMockPOIsRequested>(_onAddMockPOIs);
-    on<ToggleAreaVisibility>(_onToggleAreaVisibility);  // Add this
+    on<ToggleAreaVisibility>(_onToggleAreaVisibility);
+    on<DisplayRoute>(_onDisplayRoute);
+    on<ClearMapRoute>(_onClearMapRoute);
   }
 
   Future<void> _onInitializeMap(
@@ -37,7 +41,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       await _mapService.enableLocationComponent(event.mapboxMap);
       emit(MapReady(mapboxMap: event.mapboxMap));
       add(LoadMapPOIs());
-      add(LoadMapAreas()); // Add this line
+      add(LoadMapAreas());
     } catch (e) {
       emit(MapError(message: e.toString()));
     }
@@ -59,13 +63,11 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       final areas = await _areaRepository.getAreas();
 
       if (currentState.mapboxMap != null) {
-        // Instead of adding area layers in the bloc, we now use the service's renderAreas method
         await _mapService.renderAreas(
           currentState.mapboxMap!,
           areas,
         );
 
-        // Initially add all area types to visible set
         final visibleAreaTypes = areas.map((area) => area.type).toSet();
 
         emit(currentState.copyWith(
@@ -84,7 +86,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
-// Update the _onToggleAreaVisibility method:
   Future<void> _onToggleAreaVisibility(
       ToggleAreaVisibility event,
       Emitter<MapState> emit,
@@ -103,12 +104,11 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         newVisibleAreaTypes.remove(event.areaType);
       }
 
-      // Use the updated toggleLayersByType method
       await _mapService.toggleLayersByType(
         mapboxMap,
         event.areaType,
         event.visible,
-        event.visible ? 1.0 : 0.0, // Full opacity when visible, 0 when not
+        event.visible ? 1.0 : 0.0,
       );
 
       emit(currentState.copyWith(visibleAreaTypes: newVisibleAreaTypes));
@@ -141,7 +141,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           },
         );
 
-        // Fly to Lviv after loading POIs
         await _mapService.flyToLocation(
           currentState.mapboxMap!,
           24.031111,
@@ -207,7 +206,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     try {
       final clickedPosition = event.annotation.geometry.coordinates;
 
-      // Find the POI with matching coordinates
       final matchingPoi = event.pois.firstWhere(
             (poi) => _isCoordinateMatch(
           poi.location.longitude,
@@ -220,7 +218,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
       add(SelectPOI(poi: matchingPoi));
     } catch (e) {
-      // Just log the error but don't change state - this avoids disrupting the UI
       print('Error handling annotation tap: $e');
     }
   }
@@ -242,9 +239,37 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
-  // Helper to check if coordinates match within a small threshold
+  Future<void> _onDisplayRoute(
+      DisplayRoute event,
+      Emitter<MapState> emit,
+      ) async {
+    if (state is! MapReady || (state as MapReady).mapboxMap == null) return;
+
+    try {
+      await _mapService.displayRoute(
+        (state as MapReady).mapboxMap!,
+        event.routeGeometry,
+      );
+    } catch (e) {
+      emit(MapError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onClearMapRoute(
+      ClearMapRoute event,
+      Emitter<MapState> emit,
+      ) async {
+    if (state is! MapReady || (state as MapReady).mapboxMap == null) return;
+
+    try {
+      await _mapService.clearRoute((state as MapReady).mapboxMap!);
+    } catch (e) {
+      emit(MapError(message: e.toString()));
+    }
+  }
+
   bool _isCoordinateMatch(double lon1, double lat1, double lon2, double lat2) {
-    const double threshold = 0.0001; // About 11 meters at the equator
+    const double threshold = 0.0001;
     return (lon1 - lon2).abs() < threshold &&
         (lat1 - lat2).abs() < threshold;
   }
@@ -330,6 +355,17 @@ class ToggleAreaVisibility extends MapEvent {
   @override
   List<Object?> get props => [areaType, visible];
 }
+
+class DisplayRoute extends MapEvent {
+  final Map<String, dynamic> routeGeometry;
+
+  const DisplayRoute({required this.routeGeometry});
+
+  @override
+  List<Object?> get props => [routeGeometry];
+}
+
+class ClearMapRoute extends MapEvent {}
 
 abstract class MapState extends Equatable {
   const MapState();

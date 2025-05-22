@@ -332,6 +332,58 @@ class MapService {
       throw Exception('Error adding POI annotations: $e');
     }
   }
+
+  Future<void> displayRoute(MapboxMap mapboxMap, Map<String, dynamic> routeGeometry) async {
+    try {
+      await _clearRoute(mapboxMap);
+
+      const sourceId = 'route-source';
+      const layerId = 'route-layer';
+
+      final geoJsonSource = GeoJsonSource(
+        id: sourceId,
+        data: jsonEncode(routeGeometry),
+      );
+
+      await mapboxMap.style.addSource(geoJsonSource);
+
+      final lineLayer = LineLayer(
+        id: layerId,
+        sourceId: sourceId,
+        lineColor: const Color(0xFF2196F3).value, // Blue color
+        lineWidth: 5.0,
+        lineOpacity: 0.8,
+      );
+
+      await mapboxMap.style.addLayer(lineLayer);
+      print("Route displayed successfully");
+    } catch (e) {
+      print('Error displaying route: $e');
+    }
+  }
+
+  Future<void> clearRoute(MapboxMap mapboxMap) async {
+    await _clearRoute(mapboxMap);
+  }
+
+  Future<void> _clearRoute(MapboxMap mapboxMap) async {
+    try {
+      const sourceId = 'route-source';
+      const layerId = 'route-layer';
+
+      if (await _checkIfLayerExists(mapboxMap, layerId)) {
+        await mapboxMap.style.removeStyleLayer(layerId);
+        print("Route layer removed");
+      }
+
+      if (await _checkIfSourceExists(mapboxMap, sourceId)) {
+        await mapboxMap.style.removeStyleSource(sourceId);
+        print("Route source removed");
+      }
+    } catch (e) {
+      print('Error clearing route: $e');
+    }
+  }
 }
 
 class AnnotationClickListener extends OnPointAnnotationClickListener {

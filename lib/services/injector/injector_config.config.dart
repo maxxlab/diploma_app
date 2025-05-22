@@ -21,9 +21,12 @@ import 'package:tourist_app/repositories/poi_repository.dart' as _i481;
 import 'package:tourist_app/repositories/user_repository.dart' as _i575;
 import 'package:tourist_app/screens/home/poi/bloc/poi_bloc.dart' as _i459;
 import 'package:tourist_app/screens/map/bloc/map_bloc.dart' as _i372;
+import 'package:tourist_app/screens/map/directions/bloc/directions_bloc.dart'
+    as _i955;
 import 'package:tourist_app/screens/map/services/map_service.dart' as _i284;
 import 'package:tourist_app/screens/map/widgets/events/bloc/events_bloc.dart'
     as _i219;
+import 'package:tourist_app/services/directions_service.dart' as _i860;
 import 'package:tourist_app/services/logger/app_logger.dart' as _i69;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -38,7 +41,10 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     gh.factory<_i284.MapService>(() => _i284.MapService());
+    gh.factory<_i860.DirectionsService>(() => _i860.DirectionsService());
     gh.singleton<_i69.AppLogger>(() => _i69.AppLogger());
+    gh.factory<_i955.DirectionsBloc>(
+        () => _i955.DirectionsBloc(gh<_i860.DirectionsService>()));
     gh.factory<_i223.AuthRepository>(() => _i223.AuthRepositoryImpl(
           gh<_i59.FirebaseAuth>(),
           gh<_i974.FirebaseFirestore>(),

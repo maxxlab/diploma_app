@@ -1,6 +1,7 @@
 // lib/services/mapbox_service.dart
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../models/poi.dart';
@@ -32,7 +33,7 @@ class MapboxService {
     return jsonEncode(featureCollection);
   }
 
-  static Future<PointAnnotationManager?> addPOIAnnotations(
+  Future<PointAnnotationManager> addPOIAnnotations(
       MapboxMap mapboxMap,
       List<POI> pois,
       Function(PointAnnotation) onTap,
@@ -54,8 +55,8 @@ class MapboxService {
 
         final pointAnnotationOptions = PointAnnotationOptions(
           geometry: point,
-          iconSize: 0.15,
           image: imageData,
+          iconSize: 0.15,
           textField: poi.name,
           textSize: 12.0,
           textOffset: [0, 1.5],
@@ -74,8 +75,56 @@ class MapboxService {
 
       return pointAnnotationManager;
     } catch (e) {
-      print('Error adding POI annotations: $e');
-      return null;
+      throw Exception('Error adding POI annotations: $e');
+    }
+  }
+
+  Future<void> displayRoute(MapboxMap mapboxMap, Map<String, dynamic> routeGeometry) async {
+    try {
+      await _clearRoute(mapboxMap);
+
+      final sourceId = 'route-source';
+      final layerId = 'route-layer';
+
+      final geoJsonSource = GeoJsonSource(
+        id: sourceId,
+        data: jsonEncode(routeGeometry),
+      );
+
+      await mapboxMap.style.addSource(geoJsonSource);
+
+      final lineLayer = LineLayer(
+        id: layerId,
+        sourceId: sourceId,
+        lineColor: Colors.blue.value,
+        lineWidth: 5.0,
+        lineOpacity: 0.8,
+      );
+
+      await mapboxMap.style.addLayer(lineLayer);
+    } catch (e) {
+      print('Error displaying route: $e');
+    }
+  }
+
+  Future<void> clearRoute(MapboxMap mapboxMap) async {
+    await _clearRoute(mapboxMap);
+  }
+
+  Future<void> _clearRoute(MapboxMap mapboxMap) async {
+    try {
+      const sourceId = 'route-source';
+      const layerId = 'route-layer';
+
+      // if (await _checkIfLayerExists(mapboxMap, layerId)) {
+      //   await mapboxMap.style.removeStyleLayer(layerId);
+      // }
+      //
+      // if (await _checkIfSourceExists(mapboxMap, sourceId)) {
+      //   await mapboxMap.style.removeStyleSource(sourceId);
+      // }
+    } catch (e) {
+      print('Error clearing route: $e');
     }
   }
 
