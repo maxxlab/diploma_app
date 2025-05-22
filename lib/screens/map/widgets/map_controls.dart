@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tourist_app/screens/map/bloc/map_bloc.dart';
+import 'package:tourist_app/screens/map/widgets/directions/directions_toggle_button.dart';
 
 class MapControls extends StatelessWidget {
   const MapControls({Key? key}) : super(key: key);
@@ -14,6 +15,8 @@ class MapControls extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const DirectionsToggleButton(),
+          const SizedBox(height: 16),
           _buildControlButton(
             onPressed: () {
               context.read<MapBloc>().add(

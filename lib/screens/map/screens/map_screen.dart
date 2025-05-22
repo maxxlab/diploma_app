@@ -120,7 +120,6 @@ class _MapScreenContent extends StatelessWidget {
 
                 const MapControls(),
                 const LayerControlPanel(),
-                const DirectionsToggleButton(),
 
                 BlocBuilder<DirectionsBloc, DirectionsState>(
                   builder: (context, directionsState) {
