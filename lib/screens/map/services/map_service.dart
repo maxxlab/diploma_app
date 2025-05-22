@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -337,8 +338,8 @@ class MapService {
     try {
       await _clearRoute(mapboxMap);
 
-      const sourceId = 'route-source';
-      const layerId = 'route-layer';
+      final sourceId = 'route-source';
+      final layerId = 'route-layer';
 
       final geoJsonSource = GeoJsonSource(
         id: sourceId,
@@ -350,13 +351,12 @@ class MapService {
       final lineLayer = LineLayer(
         id: layerId,
         sourceId: sourceId,
-        lineColor: const Color(0xFF2196F3).value, // Blue color
+        lineColor: Colors.blue.value,
         lineWidth: 5.0,
         lineOpacity: 0.8,
       );
 
       await mapboxMap.style.addLayer(lineLayer);
-      print("Route displayed successfully");
     } catch (e) {
       print('Error displaying route: $e');
     }
@@ -373,12 +373,10 @@ class MapService {
 
       if (await _checkIfLayerExists(mapboxMap, layerId)) {
         await mapboxMap.style.removeStyleLayer(layerId);
-        print("Route layer removed");
       }
 
       if (await _checkIfSourceExists(mapboxMap, sourceId)) {
         await mapboxMap.style.removeStyleSource(sourceId);
-        print("Route source removed");
       }
     } catch (e) {
       print('Error clearing route: $e');

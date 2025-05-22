@@ -206,6 +206,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     try {
       final clickedPosition = event.annotation.geometry.coordinates;
 
+      emit((state as MapReady).copyWith(pois: event.pois));
+
       final matchingPoi = event.pois.firstWhere(
             (poi) => _isCoordinateMatch(
           poi.location.longitude,
