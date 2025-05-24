@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tourist_app/screens/map/widgets/events/events_tab_widget.dart';
 import 'package:tourist_app/screens/map/widgets/events/poi_details_tab.dart';
+import 'package:tourist_app/screens/map/widgets/reviews/review_tab_widget.dart';
 import '../../../models/poi.dart';
 import '../../../core/extensions/context_extension.dart';
 import '../../../services/injector/injector.dart';
 import 'events/bloc/events_bloc.dart';
+import 'reviews/bloc/reviews_bloc.dart';
 
 class POIDetailsSheet extends StatelessWidget {
   final POI poi;
@@ -18,10 +20,17 @@ class POIDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<EventsBloc>()..add(LoadEvents(poiId: poi.id)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => getIt<EventsBloc>()..add(LoadEvents(poiId: poi.id)),
+        ),
+        BlocProvider(
+          create: (context) => getIt<ReviewsBloc>()..add(LoadReviews(poiId: poi.id)),
+        ),
+      ],
       child: DefaultTabController(
-        length: 2,
+        length: 3,
         child: Container(
           height: MediaQuery.of(context).size.height * 0.85,
           decoration: BoxDecoration(
@@ -69,11 +78,11 @@ class POIDetailsSheet extends StatelessWidget {
                   indicatorWeight: 3,
                   labelStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 14,
                   ),
                   unselectedLabelStyle: const TextStyle(
                     fontWeight: FontWeight.normal,
-                    fontSize: 16,
+                    fontSize: 14,
                   ),
                   tabs: const [
                     Tab(
@@ -84,6 +93,10 @@ class POIDetailsSheet extends StatelessWidget {
                       icon: Icon(Icons.event),
                       text: 'Events',
                     ),
+                    Tab(
+                      icon: Icon(Icons.rate_review),
+                      text: 'Reviews',
+                    ),
                   ],
                 ),
               ),
@@ -93,6 +106,7 @@ class POIDetailsSheet extends StatelessWidget {
                   children: [
                     POIDetailsTab(poi: poi),
                     EventsTab(poiId: poi.id),
+                    ReviewsTab(poiId: poi.id),
                   ],
                 ),
               ),

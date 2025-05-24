@@ -19,6 +19,7 @@ import 'package:tourist_app/repositories/area_repository.dart' as _i234;
 import 'package:tourist_app/repositories/auth_repository.dart' as _i223;
 import 'package:tourist_app/repositories/events_repository.dart' as _i742;
 import 'package:tourist_app/repositories/poi_repository.dart' as _i481;
+import 'package:tourist_app/repositories/review_repository.dart' as _i686;
 import 'package:tourist_app/repositories/user_repository.dart' as _i575;
 import 'package:tourist_app/screens/home/poi/bloc/poi_bloc.dart' as _i459;
 import 'package:tourist_app/screens/map/bloc/map_bloc.dart' as _i372;
@@ -27,6 +28,8 @@ import 'package:tourist_app/screens/map/directions/bloc/directions_bloc.dart'
 import 'package:tourist_app/screens/map/services/map_service.dart' as _i284;
 import 'package:tourist_app/screens/map/widgets/events/bloc/events_bloc.dart'
     as _i219;
+import 'package:tourist_app/screens/map/widgets/reviews/bloc/reviews_bloc.dart'
+    as _i273;
 import 'package:tourist_app/services/caching_service.dart' as _i409;
 import 'package:tourist_app/services/connectivity_service.dart' as _i36;
 import 'package:tourist_app/services/directions_service.dart' as _i860;
@@ -65,10 +68,14 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i481.POIRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i399.AuthBloc>(
         () => _i399.AuthBloc(gh<_i223.AuthRepository>()));
+    gh.factory<_i686.ReviewRepository>(
+        () => _i686.ReviewRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i575.UserRepository>(() => _i575.UserRepositoryImpl(
           gh<_i974.FirebaseFirestore>(),
           gh<_i59.FirebaseAuth>(),
         ));
+    gh.factory<_i273.ReviewsBloc>(
+        () => _i273.ReviewsBloc(gh<_i686.ReviewRepository>()));
     gh.factory<_i234.AreaRepository>(
         () => _i234.AreaRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i372.MapBloc>(() => _i372.MapBloc(

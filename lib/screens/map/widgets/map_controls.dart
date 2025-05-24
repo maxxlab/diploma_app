@@ -26,18 +26,8 @@ class MapControls extends StatelessWidget {
                 ),
               );
             },
-            icon: Icons.location_city,
-            tooltip: 'Go to Lviv',
-          ),
-          const SizedBox(height: 16),
-          _buildControlButton(
-            onPressed: () {
-              context.read<MapBloc>().add(
-                const ToggleLocationTracking(),
-              );
-            },
             icon: Icons.my_location,
-            tooltip: 'My Location',
+            tooltip: 'Go to Lviv',
           ),
         ],
       ),
