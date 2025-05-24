@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:tourist_app/bloc/connectivity/connectivity_bloc.dart';
 import 'package:tourist_app/models/poi.dart';
 import 'package:tourist_app/models/route_info.dart';
 import 'package:tourist_app/screens/map/bloc/map_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:tourist_app/screens/map/widgets/map_appbar.dart';
 import 'package:tourist_app/screens/map/widgets/map_controls.dart';
 import 'package:tourist_app/screens/map/widgets/poi_sheet.dart';
 import 'package:tourist_app/screens/map/directions/bloc/directions_bloc.dart';
+import 'package:tourist_app/widgets/offline_indicator.dart';
 import '../../../../core/constants/mapbox_constants.dart';
 import '../../../../services/injector/injector.dart';
 import '../../../../widgets/error_view.dart';
@@ -77,11 +79,51 @@ class _MapScreenContent extends StatelessWidget {
               } else if (state is DirectionsInitial) {
                 context.read<MapBloc>().add(ClearMapRoute());
               } else if (state is DirectionsActive && state.error != null) {
-                // Show error message
+                if (!state.error!.contains('offline')) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Route calculation failed: ${state.error}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+          ),
+          BlocListener<ConnectivityBloc, ConnectivityState>(
+            listener: (context, state) {
+              if (state.isOffline) {
+                // Clear any active directions when going offline
+                final directionsState = context.read<DirectionsBloc>().state;
+                if (directionsState is DirectionsActive) {
+                  context.read<DirectionsBloc>().add(ClearRoute());
+                }
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Route calculation failed: ${state.error}'),
-                    backgroundColor: Colors.red,
+                    content: Row(
+                      children: [
+                        Icon(Icons.cloud_off, color: Colors.white, size: 16),
+                        const SizedBox(width: 8),
+                        Text('You are now in offline mode'),
+                      ],
+                    ),
+                    backgroundColor: Colors.orange.shade700,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.cloud_done, color: Colors.white, size: 16),
+                        const SizedBox(width: 8),
+                        Text('Connection restored'),
+                      ],
+                    ),
+                    backgroundColor: Colors.green.shade700,
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               }
@@ -120,6 +162,8 @@ class _MapScreenContent extends StatelessWidget {
 
                 const MapControls(),
                 const LayerControlPanel(),
+
+                const OfflineIndicator(),
 
                 BlocBuilder<DirectionsBloc, DirectionsState>(
                   builder: (context, directionsState) {

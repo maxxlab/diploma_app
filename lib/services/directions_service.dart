@@ -4,14 +4,22 @@ import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import '../core/constants/mapbox_constants.dart';
 import '../models/route_info.dart';
+import 'connectivity_service.dart';
 
 @injectable
 class DirectionsService {
   static const String _baseUrl = 'https://api.mapbox.com/directions/v5/mapbox';
+  final ConnectivityService _connectivityService;
+
+  DirectionsService(this._connectivityService);
 
   Future<RouteInfo> getWalkingRoute(List<RoutePoint> waypoints) async {
     if (waypoints.length < 2) {
       throw Exception('At least 2 waypoints are required');
+    }
+
+    if (!_connectivityService.isConnected) {
+      throw Exception('Directions are not available in offline mode');
     }
 
     final coordinates = waypoints
@@ -35,6 +43,9 @@ class DirectionsService {
         throw Exception('Failed to get route: ${response.statusCode}');
       }
     } catch (e) {
+      if (!_connectivityService.isConnected) {
+        throw Exception('Directions are not available in offline mode');
+      }
       throw Exception('Network error: $e');
     }
   }

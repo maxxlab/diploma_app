@@ -5,12 +5,15 @@ import 'package:equatable/equatable.dart';
 import '../../../../models/poi.dart';
 import '../../../../models/route_info.dart';
 import '../../../../services/directions_service.dart';
+import '../../../../services/connectivity_service.dart';
 
 @injectable
 class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
   final DirectionsService _directionsService;
+  final ConnectivityService _connectivityService;
 
-  DirectionsBloc(this._directionsService) : super(DirectionsInitial()) {
+  DirectionsBloc(this._directionsService, this._connectivityService)
+      : super(DirectionsInitial()) {
     on<ToggleDirectionsMode>(_onToggleDirectionsMode);
     on<AddWaypoint>(_onAddWaypoint);
     on<RemoveWaypoint>(_onRemoveWaypoint);
@@ -23,6 +26,10 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
       ToggleDirectionsMode event,
       Emitter<DirectionsState> emit,
       ) {
+    if (!_connectivityService.isConnected) {
+      return;
+    }
+
     if (state is DirectionsActive) {
       emit(DirectionsInitial());
     } else {
@@ -34,16 +41,16 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
       AddWaypoint event,
       Emitter<DirectionsState> emit,
       ) {
+    if (!_connectivityService.isConnected) {
+      return;
+    }
+
     if (state is DirectionsActive) {
       final currentState = state as DirectionsActive;
 
-      // Check if POI is already in waypoints
       if (currentState.waypoints.any((w) => w.poiId == event.poi.id)) {
-        print('POI ${event.poi.id} is already in route');
         return;
       }
-
-      print('Adding waypoint: ${event.poi.id} (${event.poi.name})');
 
       final waypoints = List<RoutePoint>.from(currentState.waypoints)
         ..add(RoutePoint(
@@ -52,11 +59,9 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
           longitude: event.poi.location.longitude,
         ));
 
-      print('Total waypoints: ${waypoints.length}');
       emit(currentState.copyWith(waypoints: waypoints, routeInfo: null));
 
       if (waypoints.length >= 2) {
-        print('Calculating route for ${waypoints.length} waypoints');
         add(CalculateRoute());
       }
     }
@@ -74,7 +79,7 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
 
       emit(currentState.copyWith(waypoints: waypoints, routeInfo: null));
 
-      if (waypoints.length >= 2) {
+      if (waypoints.length >= 2 && _connectivityService.isConnected) {
         add(CalculateRoute());
       }
     }
@@ -93,15 +98,25 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
       CalculateRoute event,
       Emitter<DirectionsState> emit,
       ) async {
+    if (!_connectivityService.isConnected) {
+      if (state is DirectionsActive) {
+        final currentState = state as DirectionsActive;
+        emit(currentState.copyWith(
+          error: 'Directions are not available in offline mode',
+          isCalculating: false,
+          routeInfo: null,
+        ));
+      }
+      return;
+    }
+
     if (state is DirectionsActive) {
       final currentState = state as DirectionsActive;
 
       if (currentState.waypoints.length < 2) {
-        print('Not enough waypoints for route calculation: ${currentState.waypoints.length}');
         return;
       }
 
-      print('Starting route calculation for ${currentState.waypoints.length} waypoints');
       emit(currentState.copyWith(isCalculating: true, error: null));
 
       try {
@@ -109,18 +124,12 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
           currentState.waypoints,
         );
 
-        print('Route calculated successfully:');
-        print('- Total distance: ${routeInfo.totalDistance}m');
-        print('- Total duration: ${routeInfo.totalDuration}s');
-        print('- Segments: ${routeInfo.segments.length}');
-
         emit(currentState.copyWith(
           routeInfo: routeInfo,
           isCalculating: false,
           error: null,
         ));
       } catch (e) {
-        print('Route calculation failed: $e');
         emit(currentState.copyWith(
           error: e.toString(),
           isCalculating: false,
@@ -134,6 +143,10 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
       ReorderWaypoints event,
       Emitter<DirectionsState> emit,
       ) {
+    if (!_connectivityService.isConnected) {
+      return;
+    }
+
     if (state is DirectionsActive) {
       final currentState = state as DirectionsActive;
       emit(currentState.copyWith(waypoints: event.waypoints, routeInfo: null));
@@ -145,6 +158,7 @@ class DirectionsBloc extends Bloc<DirectionsEvent, DirectionsState> {
   }
 }
 
+// Keep all the existing Events and States from your original file
 abstract class DirectionsEvent extends Equatable {
   const DirectionsEvent();
 

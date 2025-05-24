@@ -1,5 +1,4 @@
 // lib/app/app.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,6 +7,7 @@ import '../router/app_router.dart';
 import '../services/injector/injector.dart';
 import '../theme/app_theme.dart';
 import '../bloc/auth/auth_bloc.dart';
+import '../bloc/connectivity/connectivity_bloc.dart';
 
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
@@ -16,7 +16,12 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => getIt<AuthBloc>()),
+        BlocProvider(
+          create: (_) => getIt<AuthBloc>(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<ConnectivityBloc>()..add(ConnectivityStarted()),
+        ),
       ],
       child: MaterialApp.router(
         title: 'App Name',

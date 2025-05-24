@@ -14,6 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart' as _i59;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:tourist_app/bloc/auth/auth_bloc.dart' as _i399;
+import 'package:tourist_app/bloc/connectivity/connectivity_bloc.dart' as _i595;
 import 'package:tourist_app/repositories/area_repository.dart' as _i234;
 import 'package:tourist_app/repositories/auth_repository.dart' as _i223;
 import 'package:tourist_app/repositories/events_repository.dart' as _i742;
@@ -26,6 +27,8 @@ import 'package:tourist_app/screens/map/directions/bloc/directions_bloc.dart'
 import 'package:tourist_app/screens/map/services/map_service.dart' as _i284;
 import 'package:tourist_app/screens/map/widgets/events/bloc/events_bloc.dart'
     as _i219;
+import 'package:tourist_app/services/caching_service.dart' as _i409;
+import 'package:tourist_app/services/connectivity_service.dart' as _i36;
 import 'package:tourist_app/services/directions_service.dart' as _i860;
 import 'package:tourist_app/services/logger/app_logger.dart' as _i69;
 
@@ -41,10 +44,17 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     gh.factory<_i284.MapService>(() => _i284.MapService());
-    gh.factory<_i860.DirectionsService>(() => _i860.DirectionsService());
+    gh.factory<_i409.CachingService>(() => _i409.CachingService());
+    gh.factory<_i36.ConnectivityService>(() => _i36.ConnectivityService());
     gh.singleton<_i69.AppLogger>(() => _i69.AppLogger());
-    gh.factory<_i955.DirectionsBloc>(
-        () => _i955.DirectionsBloc(gh<_i860.DirectionsService>()));
+    gh.factory<_i595.ConnectivityBloc>(
+        () => _i595.ConnectivityBloc(gh<_i36.ConnectivityService>()));
+    gh.factory<_i860.DirectionsService>(
+        () => _i860.DirectionsService(gh<_i36.ConnectivityService>()));
+    gh.factory<_i955.DirectionsBloc>(() => _i955.DirectionsBloc(
+          gh<_i860.DirectionsService>(),
+          gh<_i36.ConnectivityService>(),
+        ));
     gh.factory<_i223.AuthRepository>(() => _i223.AuthRepositoryImpl(
           gh<_i59.FirebaseAuth>(),
           gh<_i974.FirebaseFirestore>(),
