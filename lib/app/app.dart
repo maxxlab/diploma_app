@@ -29,6 +29,7 @@ class App extends StatelessWidget {
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
         routerConfig: appRouter,
+        debugShowCheckedModeBanner: false,
         localizationsDelegates: const [
           S.delegate,
           GlobalMaterialLocalizations.delegate,

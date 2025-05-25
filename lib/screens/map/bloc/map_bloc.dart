@@ -40,8 +40,9 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     try {
       await _mapService.enableLocationComponent(event.mapboxMap);
       emit(MapReady(mapboxMap: event.mapboxMap));
-      add(LoadMapPOIs());
       add(LoadMapAreas());
+     await Future.delayed(const Duration(seconds: 3));
+      add(LoadMapPOIs());
     } catch (e) {
       emit(MapError(message: e.toString()));
     }

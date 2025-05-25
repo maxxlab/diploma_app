@@ -41,15 +41,18 @@ class MapAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
         actions: [
-          _buildActionButton(
-            icon: Icons.add_location,
-            tooltip: 'Add Mock POIs',
-            onPressed: () => context.read<MapBloc>().add(AddMockPOIsRequested()),
-          ),
-          _buildActionButton(
-            icon: Icons.logout,
-            tooltip: 'Logout',
-            onPressed: () => context.read<AuthBloc>().add(LogoutRequested()),
+          // _buildActionButton(
+          //   icon: Icons.add_location,
+          //   tooltip: 'Add Mock POIs',
+          //   onPressed: () => context.read<MapBloc>().add(AddMockPOIsRequested()),
+          // ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: _buildActionButton(
+              icon: Icons.logout,
+              tooltip: 'Logout',
+              onPressed: () => context.read<AuthBloc>().add(LogoutRequested()),
+            ),
           ),
         ],
       ),
