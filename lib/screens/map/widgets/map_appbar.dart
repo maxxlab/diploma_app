@@ -43,7 +43,7 @@ class MapAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsets.only(right: 26.0),
             child: BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
                 return _buildProfileButton(context, state);

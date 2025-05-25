@@ -312,7 +312,7 @@ class MapService {
           geometry: point,
           image: imageData,
           iconSize: 0.15,
-          textField: poi.name,
+          // textField: poi.name,
           textSize: 12.0,
           textOffset: [0, 1.5],
         );

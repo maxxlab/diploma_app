@@ -1,7 +1,7 @@
-// lib/screens/map/widgets/poi_details_tab.dart
 import 'package:flutter/material.dart';
 import 'package:tourist_app/core/extensions/context_extension.dart';
 import 'package:tourist_app/models/poi.dart';
+import 'package:tourist_app/screens/map/widgets/photo_carousel.dart';
 
 class POIDetailsTab extends StatelessWidget {
   final POI poi;
@@ -18,64 +18,7 @@ class POIDetailsTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 200,
-            width: double.infinity,
-            color: _getCategoryColor(poi.category).withOpacity(0.2),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Center(
-                  child: Icon(
-                    _getCategoryIcon(poi.category),
-                    size: 80,
-                    color: _getCategoryColor(poi.category),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.7),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          Icon(
-                            _getCategoryIcon(poi.category),
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            poi.category.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
+          _buildHeaderSection(context),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -175,6 +118,75 @@ class POIDetailsTab extends StatelessWidget {
 
                 const SizedBox(height: 30),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderSection(BuildContext context) {
+    final hasPhotos = poi.photos != null && poi.photos!.isNotEmpty;
+
+    if (hasPhotos) {
+      return PhotoCarousel(
+        photos: poi.photos!,
+        height: 200,
+      );
+    }
+
+    return Container(
+      height: 200,
+      width: double.infinity,
+      color: _getCategoryColor(poi.category).withOpacity(0.2),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: Icon(
+              _getCategoryIcon(poi.category),
+              size: 80,
+              color: _getCategoryColor(poi.category),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.7),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Icon(
+                      _getCategoryIcon(poi.category),
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      poi.category.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
