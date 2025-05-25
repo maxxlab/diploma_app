@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tourist_app/screens/map/widgets/events/events_tab_widget.dart';
 import 'package:tourist_app/screens/map/widgets/events/poi_details_tab.dart';
 import 'package:tourist_app/screens/map/widgets/reviews/review_tab_widget.dart';
+import 'package:tourist_app/widgets/favorite_star_button.dart';
 import '../../../models/poi.dart';
 import '../../../core/extensions/context_extension.dart';
 import '../../../services/injector/injector.dart';
@@ -59,6 +60,29 @@ class POIDetailsSheet extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        poi.name,
+                        style: context.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    FavoriteStarButton(
+                      poi: poi,
+                      size: 28,
+                    ),
+                  ],
                 ),
               ),
 
