@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/dimens.dart';
+import '../core/extensions/context_extension.dart';
 
-class AppTextField extends StatelessWidget {
+class AppTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final String? hint;
@@ -39,29 +39,89 @@ class AppTextField extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<AppTextField> createState() => _AppTextFieldState();
+}
+
+class _AppTextFieldState extends State<AppTextField> {
+  bool _isFocused = false;
+  bool _isPasswordVisible = false;
+
+  @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: prefix,
-        suffixIcon: suffix,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimens.paddingMedium,
-          vertical: AppDimens.paddingSmall,
+    return Focus(
+      onFocusChange: (hasFocus) {
+        setState(() {
+          _isFocused = hasFocus;
+        });
+      },
+      child: TextFormField(
+        controller: widget.controller,
+        decoration: InputDecoration(
+          labelText: widget.label,
+          hintText: widget.hint,
+          prefixIcon: widget.prefix,
+          suffixIcon: widget.obscureText
+              ? IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+              color: Colors.grey.shade600,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisible = !_isPasswordVisible;
+              });
+            },
+          )
+              : widget.suffix,
+          filled: true,
+          fillColor: Colors.grey.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: context.colorScheme.primary,
+              width: 2,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: context.colorScheme.error),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: context.colorScheme.error,
+              width: 2,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          labelStyle: TextStyle(
+            color: _isFocused
+                ? context.colorScheme.primary
+                : Colors.grey.shade600,
+          ),
         ),
+        obscureText: widget.obscureText && !_isPasswordVisible,
+        keyboardType: widget.keyboardType,
+        textInputAction: widget.textInputAction,
+        validator: widget.validator,
+        inputFormatters: widget.inputFormatters,
+        maxLines: widget.maxLines,
+        maxLength: widget.maxLength,
+        enabled: widget.enabled,
+        onChanged: widget.onChanged,
+        onTap: widget.onTap,
       ),
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      validator: validator,
-      inputFormatters: inputFormatters,
-      maxLines: maxLines,
-      maxLength: maxLength,
-      enabled: enabled,
-      onChanged: onChanged,
-      onTap: onTap,
     );
   }
 }

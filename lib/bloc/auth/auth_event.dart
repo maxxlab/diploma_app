@@ -1,5 +1,3 @@
-// lib/bloc/auth/auth_event.dart
-
 import 'package:equatable/equatable.dart';
 
 abstract class AuthEvent extends Equatable {
@@ -33,6 +31,8 @@ class SignUpRequested extends AuthEvent {
   @override
   List<Object?> get props => [email, password, name];
 }
+
+class GoogleSignInRequested extends AuthEvent {}
 
 class LogoutRequested extends AuthEvent {}
 

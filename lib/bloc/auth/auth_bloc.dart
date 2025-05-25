@@ -1,5 +1,3 @@
-// lib/bloc/auth/auth_bloc.dart
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../repositories/auth_repository.dart';
@@ -13,6 +11,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._authRepository) : super(AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<SignUpRequested>(_onSignUpRequested);
+    on<GoogleSignInRequested>(_onGoogleSignInRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckAuthStatus>(_onCheckStatus);
   }
@@ -46,6 +45,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         name: event.name,
       );
+      emit(Authenticated(user));
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> _onGoogleSignInRequested(
+      GoogleSignInRequested event,
+      Emitter<AuthState> emit,
+      ) async {
+    emit(AuthLoading());
+
+    try {
+      final user = await _authRepository.signInWithGoogle();
       emit(Authenticated(user));
     } catch (e) {
       emit(AuthError(e.toString()));

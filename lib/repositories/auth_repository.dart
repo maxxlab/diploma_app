@@ -1,12 +1,14 @@
 import 'package:injectable/injectable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user.dart';
 import '../core/constants/firebase_constants.dart';
 
 abstract class AuthRepository {
   Future<User> login({required String email, required String password});
   Future<User> signUp({required String email, required String password, required String name});
+  Future<User> signInWithGoogle();
   Future<void> logout();
   Future<User?> getCurrentUser();
 }
@@ -15,8 +17,10 @@ abstract class AuthRepository {
 class AuthRepositoryImpl implements AuthRepository {
   final firebase_auth.FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
+  final GoogleSignIn _googleSignIn;
 
-  AuthRepositoryImpl(this._firebaseAuth, this._firestore);
+  AuthRepositoryImpl(this._firebaseAuth, this._firestore)
+      : _googleSignIn = GoogleSignIn();
 
   @override
   Future<User> login({required String email, required String password}) async {
@@ -37,7 +41,6 @@ class AuthRepositoryImpl implements AuthRepository {
           .get();
 
       if (!userDoc.exists) {
-        // Create user document if it doesn't exist
         final newUser = User(
           id: uid,
           email: email,
@@ -96,9 +99,62 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<User> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        throw Exception('Google sign in was cancelled');
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final credential = firebase_auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+
+      if (userCredential.user == null) {
+        throw Exception('Failed to sign in with Google');
+      }
+
+      final uid = userCredential.user!.uid;
+      final userDoc = await _firestore
+          .collection(FirebaseConstants.usersCollection)
+          .doc(uid)
+          .get();
+
+      if (!userDoc.exists) {
+        final newUser = User(
+          id: uid,
+          email: userCredential.user!.email ?? '',
+          name: userCredential.user!.displayName,
+          profileImage: userCredential.user!.photoURL,
+        );
+
+        await _firestore
+            .collection(FirebaseConstants.usersCollection)
+            .doc(uid)
+            .set(newUser.toJson());
+
+        return newUser;
+      }
+
+      return User.fromFirestore(userDoc);
+    } catch (e) {
+      throw Exception('Failed to sign in with Google: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<void> logout() async {
     try {
-      await _firebaseAuth.signOut();
+      await Future.wait([
+        _firebaseAuth.signOut(),
+        _googleSignIn.signOut(),
+      ]);
     } catch (e) {
       throw Exception('Failed to logout: ${e.toString()}');
     }

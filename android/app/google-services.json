@@ -12,7 +12,20 @@
           "package_name": "com.example.tourist_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "428544083130-g8pp08tre38svjrl5qnidijk2le3ese0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tourist_app",
+            "certificate_hash": "25dd4039d7393d4b9e22d06db6b8c5df8d69b630"
+          }
+        },
+        {
+          "client_id": "428544083130-g3tcc5js82mh65fi7jeaqbp4031gt3nh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAizvCKah5XE_GP0stGYFQPd1psGSsMUuI"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "428544083130-g3tcc5js82mh65fi7jeaqbp4031gt3nh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "428544083130-pf43o57k6bkr98hd1o9lggo2l6300glv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.touristApp"
+              }
+            }
+          ]
         }
       }
     }
