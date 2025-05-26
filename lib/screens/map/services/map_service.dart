@@ -311,9 +311,9 @@ class MapService {
         final pointAnnotationOptions = PointAnnotationOptions(
           geometry: point,
           image: imageData,
-          iconSize: 0.15,
+          iconSize: 0.2,
           // textField: poi.name,
-          textSize: 12.0,
+          textSize: 10.0,
           textOffset: [0, 1.5],
         );
 

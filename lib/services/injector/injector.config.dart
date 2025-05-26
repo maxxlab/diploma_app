@@ -39,6 +39,7 @@ import 'package:tourist_app/services/connectivity_service.dart' as _i36;
 import 'package:tourist_app/services/directions_service.dart' as _i860;
 import 'package:tourist_app/services/image_picker_service.dart' as _i1021;
 import 'package:tourist_app/services/logger/app_logger.dart' as _i69;
+import 'package:tourist_app/services/user_service.dart' as _i915;
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -68,6 +69,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i59.FirebaseAuth>(),
           gh<_i974.FirebaseFirestore>(),
         ));
+    gh.factory<_i915.UserService>(
+        () => _i915.UserService(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i742.EventsRepository>(
         () => _i742.EventsRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i549.FavoritePOIRepository>(
