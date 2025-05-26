@@ -28,7 +28,7 @@ dependencies:
   http: ^1.1.0
   shared_preferences: ^2.5.3
   image_picker: ^1.1.2
-  mockito: ^5.4.6
+  mocktail: ^1.0.4
   # Firebase
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.3
