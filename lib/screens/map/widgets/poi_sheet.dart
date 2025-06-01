@@ -203,8 +203,8 @@ class POIDetailsSheet extends StatelessWidget {
       bounce: true,
       animationCurve: Curves.easeInOut,
       duration: const Duration(milliseconds: 300),
-      builder: (context) => BlocProvider.value(
-        value: context.read<ReportBloc>(),
+      builder: (context) => BlocProvider(
+        create: (context) => getIt<ReportBloc>(),
         child: Material(
           color: Colors.transparent,
           child: ReportFormWidget(poi: poi),

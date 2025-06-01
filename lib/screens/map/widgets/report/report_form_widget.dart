@@ -261,11 +261,6 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
               ),
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: Colors.grey.shade200),
-                  ),
-                ),
                 child: SizedBox(
                   width: double.infinity,
                   child: AppButton(
