@@ -69,12 +69,9 @@ void main() {
 
       final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.obscureText, isTrue);
-
       expect(find.byIcon(Icons.visibility), findsOneWidget);
-
       await tester.tap(find.byIcon(Icons.visibility));
       await tester.pump();
-
       final updatedTextField = tester.widget<TextField>(find.byType(TextField));
       expect(updatedTextField.obscureText, isFalse);
       expect(find.byIcon(Icons.visibility_off), findsOneWidget);

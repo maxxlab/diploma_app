@@ -1,8 +1,11 @@
-// lib/screens/map/widgets/poi_sheet.dart
+// lib/screens/map/widgets/poi_sheet.dart (updated)
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tourist_app/screens/map/widgets/events/events_tab_widget.dart';
 import 'package:tourist_app/screens/map/widgets/events/poi_details_tab.dart';
+import 'package:tourist_app/screens/map/widgets/report/bloc/report_bloc.dart';
+import 'package:tourist_app/screens/map/widgets/report/report_form_widget.dart';
 import 'package:tourist_app/screens/map/widgets/reviews/review_tab_widget.dart';
 import 'package:tourist_app/widgets/favorite_star_button.dart';
 import '../../../models/poi.dart';
@@ -28,6 +31,9 @@ class POIDetailsSheet extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => getIt<ReviewsBloc>()..add(LoadReviews(poiId: poi.id)),
+        ),
+        BlocProvider(
+          create: (context) => getIt<ReportBloc>(),
         ),
       ],
       child: DefaultTabController(
@@ -78,6 +84,22 @@ class POIDetailsSheet extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: IconButton(
+                        onPressed: () => _showReportForm(context),
+                        icon: Icon(
+                          Icons.report_problem_outlined,
+                          color: Colors.orange.shade700,
+                          size: 20,
+                        ),
+                        tooltip: 'Report Issue',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     FavoriteStarButton(
                       poi: poi,
                       size: 28,
@@ -169,6 +191,23 @@ class POIDetailsSheet extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showReportForm(BuildContext context) {
+    showMaterialModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      bounce: true,
+      animationCurve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 300),
+      builder: (context) => BlocProvider.value(
+        value: context.read<ReportBloc>(),
+        child: Material(
+          color: Colors.transparent,
+          child: ReportFormWidget(poi: poi),
         ),
       ),
     );

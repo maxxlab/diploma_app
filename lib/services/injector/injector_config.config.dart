@@ -20,6 +20,7 @@ import 'package:tourist_app/repositories/auth_repository.dart' as _i223;
 import 'package:tourist_app/repositories/events_repository.dart' as _i742;
 import 'package:tourist_app/repositories/favotite_poi_repository.dart' as _i549;
 import 'package:tourist_app/repositories/poi_repository.dart' as _i481;
+import 'package:tourist_app/repositories/report_repository.dart' as _i703;
 import 'package:tourist_app/repositories/review_repository.dart' as _i686;
 import 'package:tourist_app/repositories/user_repository.dart' as _i575;
 import 'package:tourist_app/screens/home/poi/bloc/poi_bloc.dart' as _i459;
@@ -29,6 +30,8 @@ import 'package:tourist_app/screens/map/directions/bloc/directions_bloc.dart'
 import 'package:tourist_app/screens/map/services/map_service.dart' as _i284;
 import 'package:tourist_app/screens/map/widgets/events/bloc/events_bloc.dart'
     as _i219;
+import 'package:tourist_app/screens/map/widgets/report/bloc/report_bloc.dart'
+    as _i285;
 import 'package:tourist_app/screens/map/widgets/reviews/bloc/reviews_bloc.dart'
     as _i273;
 import 'package:tourist_app/screens/profile/bloc/favorite_poi_bloc.dart'
@@ -82,6 +85,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i481.POIRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i399.AuthBloc>(
         () => _i399.AuthBloc(gh<_i223.AuthRepository>()));
+    gh.factory<_i703.ReportRepository>(() => _i703.ReportRepositoryImpl(
+          gh<_i974.FirebaseFirestore>(),
+          gh<_i59.FirebaseAuth>(),
+        ));
     gh.factory<_i753.FavoritePOIBloc>(
         () => _i753.FavoritePOIBloc(gh<_i549.FavoritePOIRepository>()));
     gh.factory<_i686.ReviewRepository>(
@@ -106,6 +113,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1021.ImagePickerService>(),
         ));
     gh.factory<_i459.POIBloc>(() => _i459.POIBloc(gh<_i481.POIRepository>()));
+    gh.factory<_i285.ReportBloc>(
+        () => _i285.ReportBloc(gh<_i703.ReportRepository>()));
     return this;
   }
 }
